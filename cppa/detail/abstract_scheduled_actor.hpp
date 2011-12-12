@@ -52,11 +52,11 @@ class abstract_scheduled_actor : public abstract_actor<local_actor>
         ordinary_message
     };
 
-    filter_result filter_msg(const any_tuple& msg);
+    auto filter_msg(const any_tuple& msg) -> filter_result;
 
-    dq_result dq(std::unique_ptr<queue_node>& node,
-                 invoke_rules_base& rules,
-                 queue_node_buffer& buffer);
+    auto dq(std::unique_ptr<queue_node>& node,
+            invoke_rules_base& rules,
+            queue_node_buffer& buffer        ) -> dq_result;
 
     bool has_pending_timeout()
     {
