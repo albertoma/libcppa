@@ -45,7 +45,7 @@ invoke_rules_base::~invoke_rules_base()
 {
 }
 
-bool invoke_rules_base::operator()(const any_tuple& t) const
+bool invoke_rules_base::operator()(any_tuple const& t) const
 {
     for (auto i = m_list.begin(); i != m_list.end(); ++i)
     {
@@ -55,7 +55,7 @@ bool invoke_rules_base::operator()(const any_tuple& t) const
 }
 
 detail::intermediate*
-invoke_rules_base::get_intermediate(const any_tuple& t) const
+invoke_rules_base::get_intermediate(any_tuple const& t) const
 {
     detail::intermediate* result;
     for (auto i = m_list.begin(); i != m_list.end(); ++i)
@@ -97,7 +97,7 @@ timed_invoke_rules& timed_invoke_rules::operator=(timed_invoke_rules&& other)
     return *this;
 }
 
-const util::duration& timed_invoke_rules::timeout() const
+util::duration const& timed_invoke_rules::timeout() const
 {
     return (m_ti != nullptr) ? m_ti->timeout() : default_timeout;
 }

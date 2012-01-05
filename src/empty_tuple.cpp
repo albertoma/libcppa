@@ -18,17 +18,17 @@ abstract_tuple* empty_tuple::copy() const
     return new empty_tuple;
 }
 
-const void* empty_tuple::at(size_t) const
+void const* empty_tuple::at(size_t) const
 {
     throw std::range_error("empty_tuple::at()");
 }
 
-const uniform_type_info& empty_tuple::utype_info_at(size_t) const
+uniform_type_info const& empty_tuple::utype_info_at(size_t) const
 {
     throw std::range_error("empty_tuple::type_at()");
 }
 
-bool empty_tuple::equals(const abstract_tuple& other) const
+bool empty_tuple::equals(abstract_tuple const& other) const
 {
     return other.size() == 0;
 }

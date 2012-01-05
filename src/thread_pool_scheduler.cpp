@@ -50,9 +50,9 @@ struct thread_pool_scheduler::worker
         m_thread = thread(&thread_pool_scheduler::worker_loop, this);
     }
 
-    worker(const worker&) = delete;
+    worker(worker const&) = delete;
 
-    worker& operator=(const worker&) = delete;
+    worker& operator=(worker const&) = delete;
 
     void operator()()
     {

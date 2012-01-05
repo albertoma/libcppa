@@ -19,7 +19,7 @@ void object::swap(object& other)
     std::swap(m_type, other.m_type);
 }
 
-object::object(void* val, const uniform_type_info* utype)
+object::object(void* val, uniform_type_info const* utype)
     : m_value(val), m_type(utype)
 {
     if (val && !utype)
@@ -38,7 +38,7 @@ object::~object()
 }
 
 
-object::object(const object& other) : m_value(&s_void), m_type(uniform_typeid<util::void_type>())
+object::object(object const& other) : m_value(&s_void), m_type(uniform_typeid<util::void_type>())
 {
     if (other.value() != &s_void)
     {
@@ -59,7 +59,7 @@ object& object::operator=(object&& other)
     return *this;
 }
 
-object& object::operator=(const object& other)
+object& object::operator=(object const& other)
 {
     // use copy ctor and then swap
     object tmp(other);
@@ -67,7 +67,7 @@ object& object::operator=(const object& other)
     return *this;
 }
 
-bool operator==(const object& lhs, const object& rhs)
+bool operator==(object const& lhs, object const& rhs)
 {
     if (lhs.type() == rhs.type())
     {
@@ -78,12 +78,12 @@ bool operator==(const object& lhs, const object& rhs)
     return false;
 }
 
-const uniform_type_info& object::type() const
+uniform_type_info const& object::type() const
 {
     return *m_type;
 }
 
-const void* object::value() const
+void const* object::value() const
 {
     return m_value;
 }

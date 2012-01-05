@@ -47,7 +47,7 @@ exception::~exception() throw()
 {
 }
 
-const char* exception::what() const throw()
+char const* exception::what() const throw()
 {
     return m_what.c_str();
 }
@@ -57,7 +57,7 @@ actor_exited::actor_exited(std::uint32_t reason) : exception(ae_what(reason))
     m_reason = reason;
 }
 
-network_error::network_error(const std::string& str) : exception(str)
+network_error::network_error(std::string const& str) : exception(str)
 {
 }
 

@@ -6,7 +6,7 @@ invokable_base::~invokable_base()
 {
 }
 
-timed_invokable::timed_invokable(const util::duration& d) : m_timeout(d)
+timed_invokable::timed_invokable(util::duration const& d) : m_timeout(d)
 {
 }
 

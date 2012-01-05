@@ -24,7 +24,7 @@ actor_proxy_cache& get_actor_proxy_cache()
 }
 
 process_information_ptr
-actor_proxy_cache::get_pinfo(const actor_proxy_cache::key_tuple& key)
+actor_proxy_cache::get_pinfo(actor_proxy_cache::key_tuple const& key)
 {
     auto i = m_pinfos.find(key);
     if (i != m_pinfos.end())
@@ -37,7 +37,7 @@ actor_proxy_cache::get_pinfo(const actor_proxy_cache::key_tuple& key)
     return tmp;
 }
 
-actor_proxy_ptr actor_proxy_cache::get(const key_tuple& key)
+actor_proxy_ptr actor_proxy_cache::get(key_tuple const& key)
 {
     auto i = m_proxies.find(key);
     if (i != m_proxies.end())
@@ -62,7 +62,7 @@ void actor_proxy_cache::add(actor_proxy_ptr& pptr)
     if (m_new_cb) m_new_cb(pptr);
 }
 
-void actor_proxy_cache::erase(const actor_proxy_ptr& pptr)
+void actor_proxy_cache::erase(actor_proxy_ptr const& pptr)
 {
     auto pinfo = pptr->parent_process_ptr();
     key_tuple key(pptr->id(), pinfo->process_id(), pinfo->node_id());

@@ -14,7 +14,7 @@ namespace cppa {
 
 namespace {
 
-typedef const char* iterator;
+typedef char const* iterator;
 
 inline void range_check(iterator begin, iterator end, size_t read_size)
 {
@@ -100,12 +100,12 @@ struct pt_reader
 
 } // namespace <anonmyous>
 
-binary_deserializer::binary_deserializer(const char* buf, size_t buf_size)
+binary_deserializer::binary_deserializer(char const* buf, size_t buf_size)
     : pos(buf), end(buf + buf_size)
 {
 }
 
-binary_deserializer::binary_deserializer(const char* bbegin, const char* bend)
+binary_deserializer::binary_deserializer(char const* bbegin, char const* bend)
     : pos(bbegin), end(bend)
 {
 }
@@ -124,7 +124,7 @@ std::string binary_deserializer::peek_object()
     return result;
 }
 
-void binary_deserializer::begin_object(const std::string&)
+void binary_deserializer::begin_object(std::string const&)
 {
 }
 
@@ -155,7 +155,7 @@ primitive_variant binary_deserializer::read_value(primitive_type ptype)
 }
 
 void binary_deserializer::read_tuple(size_t size,
-                                     const primitive_type* ptypes,
+                                     primitive_type const* ptypes,
                                      primitive_variant* storage)
 {
     for (auto end = ptypes + size; ptypes != end; ++ptypes)

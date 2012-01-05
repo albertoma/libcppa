@@ -104,7 +104,7 @@ class po_peer
     buffer<s_chunk_size, s_max_buffer_size> m_rdbuf;
     std::list<actor_proxy_ptr> m_children;
 
-    const uniform_type_info* m_meta_msg;
+    uniform_type_info const* m_meta_msg;
 
  public:
 
@@ -152,9 +152,9 @@ class po_peer
     }
 
     // returns true if @p pod is the parent of this
-    inline bool parent_exited(const po_doorman& pod);
+    inline bool parent_exited(po_doorman const& pod);
 
-    void add_child(const actor_proxy_ptr& pptr)
+    void add_child(actor_proxy_ptr const& pptr)
     {
         if (pptr) m_children.push_back(pptr);
         else
@@ -176,7 +176,7 @@ class po_peer
     // removes pptr from the list of children and returns
     // a <bool, size_t> pair, whereas: first = true if pptr is a child of this
     //                                 second = number of remaining children
-    std::pair<bool, size_t> remove_child(const actor_proxy_ptr& pptr)
+    std::pair<bool, size_t> remove_child(actor_proxy_ptr const& pptr)
     {
         auto end = m_children.end();
         auto i = std::find(m_children.begin(), end, pptr);
@@ -317,7 +317,7 @@ class po_peer
                     }
                     else
                     {
-                        DEBUG(":Monitor received for an remote actor");
+                        DEBUG(":Monitor received for a remote actor");
                     }
                 }
                 else
@@ -415,7 +415,7 @@ class po_doorman
 
 };
 
-inline bool po_peer::parent_exited(const po_doorman& pod)
+inline bool po_peer::parent_exited(po_doorman const& pod)
 {
     if (m_parent_socket == pod.get_socket())
     {
@@ -692,8 +692,8 @@ void post_office_loop(int pipe_read_handle, int pipe_write_handle)
  ******************************************************************************/
 
 void post_office_add_peer(native_socket_t a0,
-                          const process_information_ptr& a1,
-                          const actor_proxy_ptr& a2,
+                          process_information_ptr const& a1,
+                          actor_proxy_ptr const& a2,
                           std::unique_ptr<attachable>&& a3)
 {
     auto nm = singleton_manager::get_network_manager();
@@ -704,7 +704,7 @@ void post_office_add_peer(native_socket_t a0,
 }
 
 void post_office_publish(native_socket_t server_socket,
-                         const actor_ptr& published_actor)
+                         actor_ptr const& published_actor)
 {
     DEBUG("post_office_publish(" << published_actor->id() << ")");
     auto nm = singleton_manager::get_network_manager();

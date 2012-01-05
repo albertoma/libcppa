@@ -3,8 +3,8 @@
 namespace cppa { namespace detail {
 
 post_office_msg::add_peer::add_peer(native_socket_t peer_socket,
-                                    const process_information_ptr& peer_ptr,
-                                    const actor_proxy_ptr& peer_actor_ptr,
+                                    process_information_ptr const& peer_ptr,
+                                    actor_proxy_ptr const& peer_actor_ptr,
                                     std::unique_ptr<attachable>&& peer_observer)
     : sockfd(peer_socket)
     , peer(peer_ptr)
@@ -14,15 +14,15 @@ post_office_msg::add_peer::add_peer(native_socket_t peer_socket,
 }
 
 post_office_msg::add_server_socket::add_server_socket(native_socket_t ssockfd,
-                                                      const actor_ptr& whom)
+                                                      actor_ptr const& whom)
     : server_sockfd(ssockfd)
     , published_actor(whom)
 {
 }
 
 post_office_msg::post_office_msg(native_socket_t arg0,
-                                 const process_information_ptr& arg1,
-                                 const actor_proxy_ptr& arg2,
+                                 process_information_ptr const& arg1,
+                                 actor_proxy_ptr const& arg2,
                                  std::unique_ptr<attachable>&& arg3)
     : next(nullptr)
     , m_type(add_peer_type)
@@ -30,14 +30,14 @@ post_office_msg::post_office_msg(native_socket_t arg0,
     new (&m_add_peer_msg) add_peer(arg0, arg1, arg2, std::move(arg3));
 }
 
-post_office_msg::post_office_msg(native_socket_t arg0, const actor_ptr& arg1)
+post_office_msg::post_office_msg(native_socket_t arg0, actor_ptr const& arg1)
     : next(nullptr)
     , m_type(add_server_socket_type)
 {
     new (&m_add_server_socket) add_server_socket(arg0, arg1);
 }
 
-post_office_msg::post_office_msg(const actor_proxy_ptr& proxy_ptr)
+post_office_msg::post_office_msg(actor_proxy_ptr const& proxy_ptr)
     : next(nullptr)
     , m_type(proxy_exited_type)
 {

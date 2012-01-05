@@ -12,6 +12,8 @@ namespace cppa { namespace detail {
 class actor_proxy_cache
 {
 
+    friend actor_proxy_cache& get_actor_proxy_cache();
+
  public:
 
     typedef std::tuple<std::uint32_t,                     // actor id
@@ -28,7 +30,9 @@ class actor_proxy_cache
 
     new_proxy_callback m_new_cb;
 
-    process_information_ptr get_pinfo(const key_tuple& key);
+    process_information_ptr get_pinfo(key_tuple const& key);
+
+    actor_proxy_cache() = default;
 
  public:
 
@@ -39,13 +43,13 @@ class actor_proxy_cache
         m_new_cb = std::forward<F>(cb);
     }
 
-    actor_proxy_ptr get(const key_tuple& key);
+    actor_proxy_ptr get(key_tuple const& key);
 
     void add(actor_proxy_ptr& pptr);
 
     size_t size() const;
 
-    void erase(const actor_proxy_ptr& pptr);
+    void erase(actor_proxy_ptr const& pptr);
 
     template<typename F>
     void for_each(F&& fun)

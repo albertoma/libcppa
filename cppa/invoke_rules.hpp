@@ -89,7 +89,7 @@ class invoke_rules_base
      * @returns @p true if a pattern matched @p data;
      *          otherwise @p false.
      */
-    bool operator()(const any_tuple& data) const;
+    bool operator()(any_tuple const& data) const;
 
     /**
      * @brief Tries to match @p data with one of the stored patterns.
@@ -97,7 +97,7 @@ class invoke_rules_base
      * @returns An {@link intermediate} instance that could invoke
      *          the corresponding callback; otherwise @p nullptr.
      */
-    detail::intermediate* get_intermediate(const any_tuple& data) const;
+    detail::intermediate* get_intermediate(any_tuple const& data) const;
 
 };
 
@@ -111,8 +111,8 @@ class timed_invoke_rules : public invoke_rules_base
 
     friend class invoke_rules;
 
-    timed_invoke_rules(const timed_invoke_rules&) = delete;
-    timed_invoke_rules& operator=(const timed_invoke_rules&) = delete;
+    timed_invoke_rules(timed_invoke_rules const&) = delete;
+    timed_invoke_rules& operator=(timed_invoke_rules const&) = delete;
 
     timed_invoke_rules(invokable_list&& prepended_list,
                        timed_invoke_rules&& other);
@@ -127,7 +127,7 @@ public:
 
     timed_invoke_rules& operator=(timed_invoke_rules&&);
 
-    const util::duration& timeout() const;
+    util::duration const& timeout() const;
 
     void handle_timeout() const;
 
@@ -147,8 +147,8 @@ class invoke_rules : public invoke_rules_base
 
     friend class timed_invoke_rules;
 
-    invoke_rules(const invoke_rules&) = delete;
-    invoke_rules& operator=(const invoke_rules&) = delete;
+    invoke_rules(invoke_rules const&) = delete;
+    invoke_rules& operator=(invoke_rules const&) = delete;
 
  public:
 

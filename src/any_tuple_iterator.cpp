@@ -2,7 +2,7 @@
 
 namespace cppa { namespace util {
 
-any_tuple_iterator::any_tuple_iterator(const any_tuple& data, size_t pos)
+any_tuple_iterator::any_tuple_iterator(any_tuple const& data, size_t pos)
     : m_data(data), m_pos(pos)
 {
 }

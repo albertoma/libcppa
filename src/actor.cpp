@@ -24,7 +24,7 @@ inline cppa::detail::actor_registry& registry()
 
 namespace cppa {
 
-actor::actor(std::uint32_t aid, const process_information_ptr& pptr)
+actor::actor(std::uint32_t aid, process_information_ptr const& pptr)
     : m_is_proxy(true), m_id(aid), m_parent_process(pptr)
 {
     if (!pptr)
@@ -33,30 +33,17 @@ actor::actor(std::uint32_t aid, const process_information_ptr& pptr)
     }
 }
 
-actor::actor(const process_information_ptr& pptr)
+actor::actor(process_information_ptr const& pptr)
     : m_is_proxy(false), m_id(registry().next_id()), m_parent_process(pptr)
 {
     if (!pptr)
     {
         throw std::logic_error("parent == nullptr");
     }
-    else
-    {
-        registry().add(this);
-    }
 }
 
 actor::~actor()
 {
-    if (!m_is_proxy)
-    {
-        registry().remove(this);
-    }
-}
-
-intrusive_ptr<actor> actor::by_id(actor_id whom)
-{
-    return registry().find(whom);
 }
 
 void actor::join(group_ptr& what)
@@ -65,7 +52,7 @@ void actor::join(group_ptr& what)
     attach(what->subscribe(this));
 }
 
-void actor::leave(const group_ptr& what)
+void actor::leave(group_ptr const& what)
 {
     if (!what) return;
     attachable::token group_token(typeid(group::unsubscriber), what.get());

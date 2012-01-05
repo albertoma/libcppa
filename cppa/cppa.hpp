@@ -209,7 +209,7 @@
  * @code
  * receive
  * (
- *     on<atom("hello"), std::string>() >> [](const std::string& msg)
+ *     on<atom("hello"), std::string>() >> [](std::string const& msg)
  *     {
  *         cout << "received hello message: " << msg << endl;
  *     },
@@ -234,7 +234,7 @@
  * @code
  * receive
  * (
- *     on(atom("hello"), val<std::string>()) >> [](const std::string& msg)
+ *     on(atom("hello"), val<std::string>()) >> [](std::string const& msg)
  *     {
  *         cout << "received hello message: " << msg << endl;
  *     },
@@ -345,7 +345,7 @@
  *
  * The message passing of @p libcppa prohibits pointers in messages because
  * it enforces network transparent messaging.
- * Unfortunately, string literals in @p C++ have the type <tt>const char*</tt>,
+ * Unfortunately, string literals in @p C++ have the type <tt>char const*</tt>,
  * resp. <tt>const char[]</tt>. Since @p libcppa is a user-friendly library,
  * it silently converts string literals and C-strings to @p std::string objects.
  * It also converts unicode literals to the corresponding STL container.
@@ -355,7 +355,7 @@
  * // sends an std::string containing "hello actor!" to itself
  * send(self(), "hello actor!");
  *
- * const char* cstring = "cstring";
+ * char const* cstring = "cstring";
  * // sends an std::string containing "cstring" to itself
  * send(self(), cstring);
  *
@@ -486,7 +486,7 @@ inline actor_ptr spawn(abstract_event_based_actor* what)
  */
 template<scheduling_hint Hint, typename F, typename... Args>
 auto //actor_ptr
-spawn(F&& what, const Args&... args)
+spawn(F&& what, Args const&... args)
 -> typename util::disable_if_c<   std::is_convertible<typename util::rm_ref<F>::type, scheduled_actor*>::value
                                || std::is_convertible<typename util::rm_ref<F>::type, event_based_actor*>::value,
                                actor_ptr>::type
@@ -505,7 +505,7 @@ spawn(F&& what, const Args&... args)
  */
 template<typename F, typename... Args>
 auto // actor_ptr
-spawn(F&& what, const Args&... args)
+spawn(F&& what, Args const&... args)
 -> typename util::disable_if_c<   std::is_convertible<typename util::rm_ref<F>::type, scheduled_actor*>::value
                                || std::is_convertible<typename util::rm_ref<F>::type, event_based_actor*>::value,
                                actor_ptr>::type
@@ -677,7 +677,7 @@ inline actor_ptr& last_sender()
  * @param args Any number of values for the message content.
  */
 template<typename Arg0, typename... Args>
-void send(channel_ptr& whom, const Arg0& arg0, const Args&... args);
+void send(channel_ptr& whom, Arg0 const& arg0, Args const&... args);
 
 /**
  * @brief Send a message to @p whom.
@@ -692,20 +692,20 @@ void send(channel_ptr& whom, const Arg0& arg0, const Args&... args);
  * @param what Content of the message.
  * @returns @p whom.
  */
-channel_ptr& operator<<(channel_ptr& whom, const any_tuple& what);
+channel_ptr& operator<<(channel_ptr& whom, any_tuple const& what);
 
 #else
 
 template<class C, typename Arg0, typename... Args>
 typename util::enable_if<std::is_base_of<channel, C>, void>::type
-send(intrusive_ptr<C>& whom, const Arg0& arg0, const Args&... args)
+send(intrusive_ptr<C>& whom, Arg0 const& arg0, Args const&... args)
 {
     if (whom) whom->enqueue(self(), make_tuple(arg0, args...));
 }
 
 template<class C, typename Arg0, typename... Args>
 typename util::enable_if<std::is_base_of<channel, C>, void>::type
-send(intrusive_ptr<C>&& whom, const Arg0& arg0, const Args&... args)
+send(intrusive_ptr<C>&& whom, Arg0 const& arg0, Args const&... args)
 {
     intrusive_ptr<C> tmp(std::move(whom));
     if (tmp) tmp->enqueue(self(), make_tuple(arg0, args...));
@@ -713,35 +713,35 @@ send(intrusive_ptr<C>&& whom, const Arg0& arg0, const Args&... args)
 
 // matches send(self(), ...);
 template<typename Arg0, typename... Args>
-void send(local_actor* whom, const Arg0& arg0, const Args&... args)
+void send(local_actor* whom, Arg0 const& arg0, Args const&... args)
 {
     if (whom) whom->enqueue(self(), make_tuple(arg0, args...));
 }
 
 template<class C>
 typename util::enable_if<std::is_base_of<channel, C>, void>::type
-send_tuple(intrusive_ptr<C>& whom, const any_tuple& what)
+send_tuple(intrusive_ptr<C>& whom, any_tuple const& what)
 {
     if (whom) whom->enqueue(self(), what);
 }
 
 template<class C>
 typename util::enable_if<std::is_base_of<channel, C>, void>::type
-send_tuple(intrusive_ptr<C>&& whom, const any_tuple& what)
+send_tuple(intrusive_ptr<C>&& whom, any_tuple const& what)
 {
     intrusive_ptr<C> tmp(std::move(whom));
     if (tmp) tmp->enqueue(self(), what);
 }
 
 // matches send(self(), ...);
-inline void send_tuple(local_actor* whom, const any_tuple& what)
+inline void send_tuple(local_actor* whom, any_tuple const& what)
 {
     if (whom) whom->enqueue(self(), what);
 }
 
 template<class C>
 typename util::enable_if<std::is_base_of<channel, C>, intrusive_ptr<C>&>::type
-operator<<(intrusive_ptr<C>& whom, const any_tuple& what)
+operator<<(intrusive_ptr<C>& whom, any_tuple const& what)
 {
     if (whom) whom->enqueue(self(), what);
     return whom;
@@ -749,7 +749,7 @@ operator<<(intrusive_ptr<C>& whom, const any_tuple& what)
 
 template<class C>
 typename util::enable_if<std::is_base_of<channel, C>, intrusive_ptr<C>>::type
-operator<<(intrusive_ptr<C>&& whom, const any_tuple& what)
+operator<<(intrusive_ptr<C>&& whom, any_tuple const& what)
 {
     intrusive_ptr<C> tmp(std::move(whom));
     if (tmp) tmp->enqueue(self(), what);
@@ -774,7 +774,7 @@ operator<<(intrusive_ptr<C>&& whom, any_tuple&& what)
 }
 
 // matches self() << make_tuple(...)
-local_actor* operator<<(local_actor* whom, const any_tuple& what);
+local_actor* operator<<(local_actor* whom, any_tuple const& what);
 
 // matches self() << make_tuple(...)
 local_actor* operator<<(local_actor* whom, any_tuple&& what);
@@ -782,12 +782,12 @@ local_actor* operator<<(local_actor* whom, any_tuple&& what);
 #endif
 
 template<typename Arg0, typename... Args>
-void reply(const Arg0& arg0, const Args&... args)
+void reply(Arg0 const& arg0, Args const&... args)
 {
     send(self()->last_sender(), arg0, args...);
 }
 
-inline void reply_tuple(const any_tuple& what)
+inline void reply_tuple(any_tuple const& what)
 {
     send_tuple(self()->last_sender(), what);
 }
@@ -799,7 +799,7 @@ inline void reply_tuple(const any_tuple& what)
  * @param data Any number of values for the message content.
  */
 template<typename Duration, typename... Data>
-void future_send(actor_ptr whom, const Duration& rel_time, const Data&... data)
+void future_send(actor_ptr whom, Duration const& rel_time, Data const&... data)
 {
     get_scheduler()->future_send(whom, rel_time, data...);
 }
@@ -837,7 +837,7 @@ void publish(actor_ptr&& whom, std::uint16_t port);
  * @param port TCP port.
  * @returns A pointer to the proxy instance that represents the remote Actor.
  */
-actor_ptr remote_actor(const char* host, std::uint16_t port);
+actor_ptr remote_actor(char const* host, std::uint16_t port);
 
 } // namespace cppa
 

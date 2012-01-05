@@ -121,7 +121,7 @@ void publish(actor_ptr&& whom, std::uint16_t port)
     publish(static_cast<actor_ptr&>(whom), port);
 }
 
-actor_ptr remote_actor(const char* host, std::uint16_t port)
+actor_ptr remote_actor(char const* host, std::uint16_t port)
 {
     detail::native_socket_t sockfd;
     struct sockaddr_in serv_addr;
@@ -142,7 +142,7 @@ actor_ptr remote_actor(const char* host, std::uint16_t port)
     serv_addr.sin_family = AF_INET;
     memmove(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
     serv_addr.sin_port = htons(port);
-    if (connect(sockfd, (const sockaddr*) &serv_addr, sizeof(serv_addr)) < 0)
+    if (connect(sockfd, (sockaddr const*) &serv_addr, sizeof(serv_addr)) < 0)
     {
         throw network_error("could not connect to host");
     }

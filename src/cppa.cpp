@@ -18,11 +18,11 @@ class observer : public cppa::attachable
         send(m_client, atom(":Down"), actor_ptr(self()), reason);
     }
 
-    bool matches(const cppa::attachable::token& match_token)
+    bool matches(cppa::attachable::token const& match_token)
     {
         if (match_token.subtype == typeid(observer))
         {
-            auto ptr = reinterpret_cast<const cppa::local_actor*>(match_token.ptr);
+            auto ptr = reinterpret_cast<cppa::local_actor const*>(match_token.ptr);
             return m_client == ptr;
         }
         return false;
@@ -34,7 +34,7 @@ class observer : public cppa::attachable
 
 namespace cppa {
 
-local_actor* operator<<(local_actor* whom, const any_tuple& what)
+local_actor* operator<<(local_actor* whom, any_tuple const& what)
 {
     if (whom) whom->enqueue(self(), what);
     return whom;

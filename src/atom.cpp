@@ -2,7 +2,7 @@
 
 namespace cppa {
 
-std::string to_string(const atom_value& a)
+std::string to_string(atom_value const& a)
 {
     std::string result;
     result.reserve(11);

@@ -9,7 +9,7 @@ namespace cppa {
 
 // forward declarations
 class uniform_type_info;
-const uniform_type_info* uniform_typeid(const std::type_info&);
+uniform_type_info const* uniform_typeid(std::type_info const&);
 
 } // namespace cppa
 
@@ -40,13 +40,13 @@ struct type_list<Head, Tail...>
         init<type_list>(m_arr);
     }
 
-    inline const uniform_type_info& at(size_t pos) const
+    inline uniform_type_info const& at(size_t pos) const
     {
         return *m_arr[pos];
     }
 
     template<typename TypeList>
-    static void init(const uniform_type_info** what)
+    static void init(uniform_type_info const* * what)
     {
         what[0] = uniform_typeid(typeid(typename TypeList::head_type));
         if (TypeList::size > 1)
@@ -58,7 +58,7 @@ struct type_list<Head, Tail...>
 
  private:
 
-    const uniform_type_info* m_arr[size];
+    uniform_type_info const* m_arr[size];
 
 };
 

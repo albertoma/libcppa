@@ -29,14 +29,14 @@ class binary_writer
     binary_writer(binary_serializer* s) : self(s) { }
 
     template<typename T>
-    inline static void write_int(binary_serializer* self, const T& value)
+    inline static void write_int(binary_serializer* self, T const& value)
     {
         memcpy(self->m_wr_pos, &value, sizeof(T));
         self->m_wr_pos += sizeof(T);
     }
 
     inline static void write_string(binary_serializer* self,
-                                    const std::string& str)
+                                    std::string const& str)
     {
         write_int(self, static_cast<std::uint32_t>(str.size()));
         memcpy(self->m_wr_pos, str.c_str(), str.size());
@@ -44,7 +44,7 @@ class binary_writer
     }
 
     template<typename T>
-    void operator()(const T& value,
+    void operator()(T const& value,
                     typename enable_if< std::is_integral<T> >::type* = 0)
     {
         self->acquire(sizeof(T));
@@ -52,20 +52,20 @@ class binary_writer
     }
 
     template<typename T>
-    void operator()(const T&,
+    void operator()(T const&,
                     typename enable_if< std::is_floating_point<T> >::type* = 0)
     {
         throw std::logic_error("binary_serializer::write_floating_point "
                                "not implemented yet");
     }
 
-    void operator()(const std::string& str)
+    void operator()(std::string const& str)
     {
         self->acquire(sizeof(std::uint32_t) + str.size());
         write_string(self, str);
     }
 
-    void operator()(const std::u16string& str)
+    void operator()(std::u16string const& str)
     {
         self->acquire(sizeof(std::uint32_t) + str.size());
         write_int(self, static_cast<std::uint32_t>(str.size()));
@@ -76,7 +76,7 @@ class binary_writer
         }
     }
 
-    void operator()(const std::u32string& str)
+    void operator()(std::u32string const& str)
     {
         self->acquire(sizeof(std::uint32_t) + str.size());
         write_int(self, static_cast<std::uint32_t>(str.size()));
@@ -138,7 +138,7 @@ void binary_serializer::acquire(size_t num_bytes)
     }
 }
 
-void binary_serializer::begin_object(const std::string& tname)
+void binary_serializer::begin_object(std::string const& tname)
 {
     acquire(sizeof(std::uint32_t) + tname.size());
     detail::binary_writer::write_string(this, tname);
@@ -159,15 +159,15 @@ void binary_serializer::end_sequence()
 {
 }
 
-void binary_serializer::write_value(const primitive_variant& value)
+void binary_serializer::write_value(primitive_variant const& value)
 {
     value.apply(detail::binary_writer(this));
 }
 
 void binary_serializer::write_tuple(size_t size,
-                                    const primitive_variant* values)
+                                    primitive_variant const* values)
 {
-    const primitive_variant* end = values + size;
+    primitive_variant const* end = values + size;
     for ( ; values != end; ++values)
     {
         write_value(*values);
@@ -187,7 +187,7 @@ size_t binary_serializer::size() const
     return static_cast<size_t>(m_wr_pos - m_begin);
 }
 
-const char* binary_serializer::data() const
+char const* binary_serializer::data() const
 {
     return m_begin;
 }

@@ -28,6 +28,7 @@
 
 #include "cppa/detail/demangle.hpp"
 #include "cppa/detail/object_array.hpp"
+#include "cppa/detail/actor_registry.hpp"
 #include "cppa/detail/to_uniform_name.hpp"
 #include "cppa/detail/addressed_message.hpp"
 #include "cppa/detail/singleton_manager.hpp"
@@ -41,10 +42,10 @@ using cppa::util::void_type;
 
 namespace std {
 
-ostream& operator<<(ostream& o, const cppa::actor_ptr&) { return o; }
+ostream& operator<<(ostream& o, cppa::actor_ptr const&) { return o; }
 istream& operator>>(istream& i, cppa::actor_ptr&) { return i; }
 
-ostream& operator<<(ostream& o, const cppa::util::void_type&) { return o; }
+ostream& operator<<(ostream& o, cppa::util::void_type const&) { return o; }
 istream& operator>>(istream& i, cppa::util::void_type&) { return i; }
 
 } // namespace std
@@ -56,7 +57,7 @@ inline cppa::detail::uniform_type_info_map& uti_map()
     return *(cppa::detail::singleton_manager::get_uniform_type_info_map());
 }
 
-inline const char* raw_name(const std::type_info& tinfo)
+inline char const* raw_name(std::type_info const& tinfo)
 {
 #ifdef CPPA_WINDOWS
     return tinfo.raw_name();
@@ -72,7 +73,7 @@ struct is_signed
 };
 
 template<typename T>
-inline const char* raw_name()
+inline char const* raw_name()
 {
     return raw_name(typeid(T));
 }
@@ -129,7 +130,7 @@ class void_type_tinfo : public util::abstract_uniform_type_info<void_type>
 
  protected:
 
-    void serialize(const void*, serializer* sink) const
+    void serialize(void const*, serializer* sink) const
     {
         serialize_nullptr(sink);
     }
@@ -151,9 +152,9 @@ class actor_ptr_tinfo : public util::abstract_uniform_type_info<actor_ptr>
 
  public:
 
-    static void s_serialize(const actor* ptr,
+    static void s_serialize(actor_ptr const& ptr,
                             serializer* sink,
-                            const std::string name)
+                            std::string const& name)
     {
         if (!ptr)
         {
@@ -161,6 +162,7 @@ class actor_ptr_tinfo : public util::abstract_uniform_type_info<actor_ptr>
         }
         else
         {
+            singleton_manager::get_actor_registry()->put(ptr->id(), ptr);
             primitive_variant ptup[3];
             ptup[0] = ptr->id();
             ptup[1] = ptr->parent_process().process_id();
@@ -173,7 +175,7 @@ class actor_ptr_tinfo : public util::abstract_uniform_type_info<actor_ptr>
 
     static void s_deserialize(actor_ptr& ptrref,
                               deserializer* source,
-                              const std::string name)
+                              std::string const& name)
     {
         std::string cname = source->seek_object();
         if (cname != name)
@@ -195,13 +197,15 @@ class actor_ptr_tinfo : public util::abstract_uniform_type_info<actor_ptr>
             source->begin_object(cname);
             source->read_tuple(3, ptypes, ptup);
             source->end_object();
-            const std::string& nstr = get<std::string>(ptup[2]);
+            std::string const& nstr = get<std::string>(ptup[2]);
             // local actor?
             auto pinf = process_information::get();
             if (   pinf->process_id() == get<std::uint32_t>(ptup[1])
                 && cppa::equal(nstr, pinf->node_id()))
             {
-                ptrref = actor::by_id(get<std::uint32_t>(ptup[0]));
+                auto id = get<std::uint32_t>(ptup[0]);
+                ptrref = singleton_manager::get_actor_registry()->get(id);
+                //ptrref = actor::by_id(get<std::uint32_t>(ptup[0]));
             }
             else
             {
@@ -216,9 +220,9 @@ class actor_ptr_tinfo : public util::abstract_uniform_type_info<actor_ptr>
 
  protected:
 
-    void serialize(const void* ptr, serializer* sink) const
+    void serialize(void const* ptr, serializer* sink) const
     {
-        s_serialize(reinterpret_cast<const actor_ptr*>(ptr)->get(),
+        s_serialize(*reinterpret_cast<actor_ptr const*>(ptr),//->get(),
                     sink,
                     name());
     }
@@ -235,9 +239,9 @@ class group_ptr_tinfo : public util::abstract_uniform_type_info<group_ptr>
 
  public:
 
-    static void s_serialize(const group* ptr,
+    static void s_serialize(group_ptr const& ptr,
                             serializer* sink,
-                            const std::string& name)
+                            std::string const& name)
     {
         if (!ptr)
         {
@@ -254,7 +258,7 @@ class group_ptr_tinfo : public util::abstract_uniform_type_info<group_ptr>
 
     static void s_deserialize(group_ptr& ptrref,
                               deserializer* source,
-                              const std::string& name)
+                              std::string const& name)
     {
         std::string cname = source->seek_object();
         if (cname != name)
@@ -282,9 +286,9 @@ class group_ptr_tinfo : public util::abstract_uniform_type_info<group_ptr>
 
  protected:
 
-    void serialize(const void* ptr, serializer* sink) const
+    void serialize(void const* ptr, serializer* sink) const
     {
-        s_serialize(reinterpret_cast<const group_ptr*>(ptr)->get(),
+        s_serialize(*reinterpret_cast<group_ptr const*>(ptr),
                     sink,
                     name());
     }
@@ -304,11 +308,11 @@ class channel_ptr_tinfo : public util::abstract_uniform_type_info<channel_ptr>
 
  public:
 
-    static void s_serialize(const channel* ptr,
+    static void s_serialize(channel_ptr const& ptr,
                             serializer* sink,
-                            const std::string& channel_type_name,
-                            const std::string& actor_ptr_type_name,
-                            const std::string& group_ptr_type_name)
+                            std::string const& channel_type_name,
+                            std::string const& actor_ptr_type_name,
+                            std::string const& group_ptr_type_name)
     {
         sink->begin_object(channel_type_name);
         if (!ptr)
@@ -317,13 +321,13 @@ class channel_ptr_tinfo : public util::abstract_uniform_type_info<channel_ptr>
         }
         else
         {
-            const group* gptr;
-            auto aptr = dynamic_cast<const actor*>(ptr);
+            auto aptr = ptr.downcast<actor>();
+            group_ptr gptr;
             if (aptr)
             {
                 actor_ptr_tinfo::s_serialize(aptr, sink, actor_ptr_type_name);
             }
-            else if ((gptr = dynamic_cast<const group*>(ptr)) != nullptr)
+            else if ((gptr = ptr.downcast<group>()))
             {
                 group_ptr_tinfo::s_serialize(gptr, sink, group_ptr_type_name);
             }
@@ -338,9 +342,9 @@ class channel_ptr_tinfo : public util::abstract_uniform_type_info<channel_ptr>
 
     static void s_deserialize(channel_ptr& ptrref,
                               deserializer* source,
-                              const std::string& name,
-                              const std::string& actor_ptr_type_name,
-                              const std::string& group_ptr_type_name)
+                              std::string const& name,
+                              std::string const& actor_ptr_type_name,
+                              std::string const& group_ptr_type_name)
     {
         std::string cname = source->seek_object();
         if (cname != name)
@@ -376,9 +380,9 @@ class channel_ptr_tinfo : public util::abstract_uniform_type_info<channel_ptr>
 
  protected:
 
-    void serialize(const void* instance, serializer* sink) const
+    void serialize(void const* instance, serializer* sink) const
     {
-        s_serialize(reinterpret_cast<const channel_ptr*>(instance)->get(),
+        s_serialize(*reinterpret_cast<channel_ptr const*>(instance),
                     sink,
                     name(),
                     actor_ptr_name,
@@ -408,9 +412,9 @@ class any_tuple_tinfo : public util::abstract_uniform_type_info<any_tuple>
 
  public:
 
-    static void s_serialize(const any_tuple& atup,
+    static void s_serialize(any_tuple const& atup,
                             serializer* sink,
-                            const std::string& name)
+                            std::string const& name)
     {
         sink->begin_object(name);
         sink->begin_sequence(atup.size());
@@ -424,7 +428,7 @@ class any_tuple_tinfo : public util::abstract_uniform_type_info<any_tuple>
 
     static void s_deserialize(any_tuple& atref,
                               deserializer* source,
-                              const std::string& name)
+                              std::string const& name)
     {
         auto result = new detail::object_array;
         auto str = source->seek_object();
@@ -444,9 +448,9 @@ class any_tuple_tinfo : public util::abstract_uniform_type_info<any_tuple>
 
  protected:
 
-    void serialize(const void* instance, serializer* sink) const
+    void serialize(void const* instance, serializer* sink) const
     {
-        s_serialize(*reinterpret_cast<const any_tuple*>(instance),sink,name());
+        s_serialize(*reinterpret_cast<any_tuple const*>(instance),sink,name());
     }
 
     void deserialize(void* instance, deserializer* source) const
@@ -466,13 +470,13 @@ class addr_msg_tinfo : public util::abstract_uniform_type_info<addressed_message
 
  public:
 
-    virtual void serialize(const void* instance, serializer* sink) const
+    virtual void serialize(void const* instance, serializer* sink) const
     {
-        const addressed_message& msg = *reinterpret_cast<const addressed_message*>(instance);
-        const any_tuple& data = msg.content();
+        addressed_message const& msg = *reinterpret_cast<addressed_message const*>(instance);
+        any_tuple const& data = msg.content();
         sink->begin_object(name());
-        actor_ptr_tinfo::s_serialize(msg.sender().get(), sink, actor_ptr_name);
-        channel_ptr_tinfo::s_serialize(msg.receiver().get(),
+        actor_ptr_tinfo::s_serialize(msg.sender(), sink, actor_ptr_name);
+        channel_ptr_tinfo::s_serialize(msg.receiver(),
                                        sink,
                                        channel_ptr_name,
                                        actor_ptr_name,
@@ -517,9 +521,9 @@ class atom_value_tinfo : public util::abstract_uniform_type_info<atom_value>
 
  public:
 
-    virtual void serialize(const void* instance, serializer* sink) const
+    virtual void serialize(void const* instance, serializer* sink) const
     {
-        auto val = reinterpret_cast<const atom_value*>(instance);
+        auto val = reinterpret_cast<atom_value const*>(instance);
         sink->begin_object(name());
         sink->write_value(static_cast<std::uint64_t>(*val));
         sink->end_object();
@@ -541,9 +545,9 @@ class atom_value_tinfo : public util::abstract_uniform_type_info<atom_value>
 class duration_tinfo : public util::abstract_uniform_type_info<util::duration>
 {
 
-    virtual void serialize(const void* instance, serializer* sink) const
+    virtual void serialize(void const* instance, serializer* sink) const
     {
-        auto val = reinterpret_cast<const util::duration*>(instance);
+        auto val = reinterpret_cast<util::duration const*>(instance);
         sink->begin_object(name());
         sink->write_value(static_cast<std::uint32_t>(val->unit));
         sink->write_value(val->count);
@@ -588,11 +592,11 @@ class int_tinfo : public detail::default_uniform_type_info_impl<T>
 
  public:
 
-    bool equals(const std::type_info& tinfo) const
+    bool equals(std::type_info const& tinfo) const
     {
         // TODO: string comparsion sucks & is slow; find a nicer solution
         auto map_iter = uti_map().int_names().find(sizeof(T));
-        const string_set& st = is_signed<T>::value ? map_iter->second.first
+        string_set const& st = is_signed<T>::value ? map_iter->second.first
                                                    : map_iter->second.second;
         auto end = st.end();
         for (auto i = st.begin(); i != end; ++i)
@@ -619,13 +623,13 @@ class uniform_type_info_map_helper
     typedef uniform_type_info_map* this_ptr;
 
     static void insert(this_ptr d, uniform_type_info* uti,
-                       const std::set<std::string>& tnames)
+                       std::set<std::string> const& tnames)
     {
         if (tnames.empty())
         {
             throw std::logic_error("tnames.empty()");
         }
-        for (const std::string& tname : tnames)
+        for (std::string const& tname : tnames)
         {
             d->m_by_rname.insert(std::make_pair(tname, uti));
         }
@@ -634,7 +638,7 @@ class uniform_type_info_map_helper
 
     template<typename T>
     static inline void insert(this_ptr d,
-                              const std::set<std::string>& tnames,
+                              std::set<std::string> const& tnames,
                               typename enable_if<is_integral<T>>::type* = 0)
     {
         //insert(new default_uniform_type_info_impl<T>(), tnames);
@@ -643,7 +647,7 @@ class uniform_type_info_map_helper
 
     template<typename T>
     static inline void insert(this_ptr d,
-                              const std::set<std::string>& tnames,
+                              std::set<std::string> const& tnames,
                               typename disable_if<is_integral<T>>::type* = 0)
     {
         insert(d, new default_uniform_type_info_impl<T>(), tnames);
@@ -735,7 +739,7 @@ uniform_type_info_map::~uniform_type_info_map()
     m_by_uname.clear();
 }
 
-uniform_type_info* uniform_type_info_map::by_raw_name(const std::string& name) const
+uniform_type_info* uniform_type_info_map::by_raw_name(std::string const& name) const
 {
     auto i = m_by_rname.find(name);
     if (i != m_by_rname.end())
@@ -745,7 +749,7 @@ uniform_type_info* uniform_type_info_map::by_raw_name(const std::string& name) c
     return nullptr;
 }
 
-uniform_type_info* uniform_type_info_map::by_uniform_name(const std::string& name) const
+uniform_type_info* uniform_type_info_map::by_uniform_name(std::string const& name) const
 {
     auto i = m_by_uname.find(name);
     if (i != m_by_uname.end())
@@ -755,7 +759,7 @@ uniform_type_info* uniform_type_info_map::by_uniform_name(const std::string& nam
     return nullptr;
 }
 
-bool uniform_type_info_map::insert(const std::set<std::string>& raw_names,
+bool uniform_type_info_map::insert(std::set<std::string> const& raw_names,
                                    uniform_type_info* what)
 {
     if (m_by_uname.count(what->name()) > 0)
@@ -764,7 +768,7 @@ bool uniform_type_info_map::insert(const std::set<std::string>& raw_names,
         return false;
     }
     m_by_uname.insert(std::make_pair(what->name(), what));
-    for (const std::string& plain_name : raw_names)
+    for (std::string const& plain_name : raw_names)
     {
         if (!m_by_rname.insert(std::make_pair(plain_name, what)).second)
         {
@@ -780,7 +784,7 @@ std::vector<uniform_type_info*> uniform_type_info_map::get_all() const
 {
     std::vector<uniform_type_info*> result;
     result.reserve(m_by_uname.size());
-    for (const uti_map::value_type& i : m_by_uname)
+    for (uti_map::value_type const& i : m_by_uname)
     {
         result.push_back(i.second);
     }
@@ -791,12 +795,12 @@ std::vector<uniform_type_info*> uniform_type_info_map::get_all() const
 
 namespace cppa {
 
-bool announce(const std::type_info& tinfo, uniform_type_info* utype)
+bool announce(std::type_info const& tinfo, uniform_type_info* utype)
 {
     return uti_map().insert({ raw_name(tinfo) }, utype);
 }
 
-uniform_type_info::uniform_type_info(const std::string& uname) : m_name(uname)
+uniform_type_info::uniform_type_info(std::string const& uname) : m_name(uname)
 {
 }
 
@@ -809,8 +813,8 @@ object uniform_type_info::create() const
     return { new_instance(), this };
 }
 
-const uniform_type_info*
-uniform_type_info::from(const std::type_info& tinf)
+uniform_type_info const*
+uniform_type_info::from(std::type_info const& tinf)
 {
     auto result = uti_map().by_raw_name(raw_name(tinf));
     if (!result)
@@ -823,7 +827,7 @@ uniform_type_info::from(const std::type_info& tinf)
     return result;
 }
 
-uniform_type_info* uniform_type_info::from(const std::string& name)
+uniform_type_info* uniform_type_info::from(std::string const& name)
 {
     auto result = uti_map().by_uniform_name(name);
     if (!result)
@@ -845,7 +849,7 @@ std::vector<uniform_type_info*> uniform_type_info::instances()
     return uti_map().get_all();
 }
 
-const uniform_type_info* uniform_typeid(const std::type_info& tinfo)
+uniform_type_info const* uniform_typeid(std::type_info const& tinfo)
 {
     return uniform_type_info::from(tinfo);
 }

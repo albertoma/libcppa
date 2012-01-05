@@ -21,7 +21,7 @@
 
 namespace {
 
-constexpr const char* mapped_int_names[][2] =
+constexpr char const* mapped_int_names[][2] =
 {
     { nullptr, nullptr }, // sizeof 0 { invalid }
     { "@i8",   "@u8"   }, // sizeof 1 -> signed / unsigned int8
@@ -48,7 +48,7 @@ inline std::string demangled()
 }
 
 template<typename T>
-constexpr const char* mapped_int_name()
+constexpr char const* mapped_int_name()
 {
     return mapped_int_names[sizeof(T)][sign_index<T>()];
 }
@@ -162,7 +162,7 @@ std::string to_uniform_name_impl(Iterator begin, Iterator end,
     {
         std::string result;
         substrings.push_back(std::make_pair(anchor, end));
-        for (const subseq& sstr : substrings)
+        for (subseq const& sstr : substrings)
         {
             if (!result.empty()) result += ",";
             result += to_uniform_name_impl(sstr.first, sstr.second);
@@ -209,7 +209,7 @@ std::string to_uniform_name_impl(Iterator begin, Iterator end,
 
 namespace cppa { namespace detail {
 
-std::string to_uniform_name(const std::string& dname)
+std::string to_uniform_name(std::string const& dname)
 {
     static std::string an = "(anonymous namespace)";
     static std::string an_replacement = "@_";
@@ -229,7 +229,7 @@ std::string to_uniform_name(const std::string& dname)
     return r;
 }
 
-std::string to_uniform_name(const std::type_info& tinfo)
+std::string to_uniform_name(std::type_info const& tinfo)
 {
     return to_uniform_name(demangle(tinfo.name()));
 }

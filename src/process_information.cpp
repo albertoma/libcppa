@@ -22,20 +22,20 @@ void erase_trailing_newline(std::string& str)
 }
 
 #ifdef CPPA_MACOS
-const char* s_get_uuid =
+char const* s_get_uuid =
     "/usr/sbin/diskutil info / | "
     "/usr/bin/awk '$0 ~ /UUID/ { print $3 }'";
-const char* s_get_mac =
+char const* s_get_mac =
     "/usr/sbin/system_profiler SPNetworkDataType | "
     "/usr/bin/grep -Fw MAC | "
     "/usr/bin/grep -o '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}' | "
     "/usr/bin/head -n1";
 #elif defined(CPPA_LINUX)
-const char* s_get_uuid =
+char const* s_get_uuid =
     "/bin/egrep -o 'UUID=(([0-9a-fA-F-]+)(-[0-9a-fA-F-]+){3})\\s+/\\s+' "
                   "/etc/fstab | "
     "/bin/egrep -o '([0-9a-fA-F-]+)(-[0-9a-fA-F-]+){3}'";
-const char* s_get_mac =
+char const* s_get_mac =
     "/sbin/ifconfig | "
     "/bin/egrep -o '[0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5}' | "
     "head -n1";
@@ -104,7 +104,7 @@ std::uint8_t hex_char_value(char c)
 
 namespace cppa {
 
-void node_id_from_string(const std::string& hash,
+void node_id_from_string(std::string const& hash,
                          process_information::node_id_type& node_id)
 {
     if (hash.size() != (node_id.size() * 2))
@@ -121,8 +121,8 @@ void node_id_from_string(const std::string& hash,
     }
 }
 
-bool equal(const std::string& hash,
-           const process_information::node_id_type& node_id)
+bool equal(std::string const& hash,
+           process_information::node_id_type const& node_id)
 {
     if (hash.size() != (node_id.size() * 2))
     {
@@ -150,23 +150,23 @@ bool equal(const std::string& hash,
     return true;
 }
 
-process_information::process_information(const process_information& other)
+process_information::process_information(process_information const& other)
     : super(), m_process_id(other.process_id()), m_node_id(other.node_id())
 {
 }
 
-process_information::process_information(std::uint32_t a, const std::string& b)
+process_information::process_information(std::uint32_t a, std::string const& b)
     : m_process_id(a)
 {
     node_id_from_string(b, m_node_id);
 }
 
-process_information::process_information(std::uint32_t a, const node_id_type& b)
+process_information::process_information(std::uint32_t a, node_id_type const& b)
     : m_process_id(a), m_node_id(b)
 {
 }
 
-std::string to_string(const process_information::node_id_type& node_id)
+std::string to_string(process_information::node_id_type const& node_id)
 {
     std::ostringstream oss;
     oss << std::hex;
@@ -179,15 +179,15 @@ std::string to_string(const process_information::node_id_type& node_id)
     return oss.str();
 }
 
-const intrusive_ptr<process_information>& process_information::get()
+intrusive_ptr<process_information> const& process_information::get()
 {
     return s_pinfo;
 }
 
-int process_information::compare(const process_information& other) const
+int process_information::compare(process_information const& other) const
 {
-    int tmp = strncmp(reinterpret_cast<const char*>(node_id().data()),
-                      reinterpret_cast<const char*>(other.node_id().data()),
+    int tmp = strncmp(reinterpret_cast<char const*>(node_id().data()),
+                      reinterpret_cast<char const*>(other.node_id().data()),
                       node_id_size);
     if (tmp == 0)
     {
@@ -198,7 +198,7 @@ int process_information::compare(const process_information& other) const
     return tmp;
 }
 
-std::string to_string(const process_information& what)
+std::string to_string(process_information const& what)
 {
     std::ostringstream oss;
     oss << what.process_id() << "@" << to_string(what.node_id());

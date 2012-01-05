@@ -20,7 +20,7 @@
 namespace cppa { namespace detail {
 
 template<typename T>
-class is_stl_compliant_list
+class is_stl_compatible_list
 {
 
     template<class C>
@@ -29,7 +29,9 @@ class is_stl_compliant_list
         // mutable pointer
         C* mc,
         // check if there's a 'void push_back()' that takes C::value_type
-        decltype(mc->push_back(typename C::value_type()))*                  = 0
+        decltype(mc->push_back(typename C::value_type()))*            = nullptr,
+        // check if there's a 'size()' member function returning an integer
+        typename util::enable_if<std::is_integral<decltype(mc->size())>>::type* = nullptr
     )
     {
         return true;
@@ -48,7 +50,7 @@ class is_stl_compliant_list
 };
 
 template<typename T>
-class is_stl_compliant_map
+class is_stl_compatible_map
 {
 
     template<class C>
@@ -57,7 +59,9 @@ class is_stl_compliant_map
         // mutable pointer
         C* mc,
         // check if there's an 'insert()' that takes C::value_type
-        decltype(mc->insert(typename C::value_type()))* = nullptr
+        decltype(mc->insert(typename C::value_type()))*               = nullptr,
+            // check if there's a 'size()' member function returning an integer
+        typename util::enable_if<std::is_integral<decltype(mc->size())>>::type* = nullptr
     )
     {
         return true;
@@ -82,8 +86,8 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
     struct is_invalid
     {
         static const bool value =    !util::is_primitive<X>::value
-                                  && !is_stl_compliant_map<X>::value
-                                  && !is_stl_compliant_list<X>::value;
+                                  && !is_stl_compatible_map<X>::value
+                                  && !is_stl_compatible_list<X>::value;
     };
 
     class member
@@ -91,16 +95,16 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
 
         uniform_type_info* m_meta;
 
-        std::function<void (const uniform_type_info*,
-                            const void*,
+        std::function<void (uniform_type_info const*,
+                            void const*,
                             serializer*              )> m_serialize;
 
-        std::function<void (const uniform_type_info*,
+        std::function<void (uniform_type_info const*,
                             void*,
                             deserializer*            )> m_deserialize;
 
-        member(const member&) = delete;
-        member& operator=(const member&) = delete;
+        member(member const&) = delete;
+        member& operator=(member const&) = delete;
 
         void swap(member& other)
         {
@@ -122,13 +126,13 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
         template<typename R, class C>
         member(uniform_type_info* mtptr, R C::*mem_ptr) : m_meta(mtptr)
         {
-            m_serialize = [mem_ptr] (const uniform_type_info* mt,
-                                     const void* obj,
+            m_serialize = [mem_ptr] (uniform_type_info const* mt,
+                                     void const* obj,
                                      serializer* s)
             {
-                mt->serialize(&(*reinterpret_cast<const C*>(obj).*mem_ptr), s);
+                mt->serialize(&(*reinterpret_cast<C const*>(obj).*mem_ptr), s);
             };
-            m_deserialize = [mem_ptr] (const uniform_type_info* mt,
+            m_deserialize = [mem_ptr] (uniform_type_info const* mt,
                                        void* obj,
                                        deserializer* d)
             {
@@ -145,14 +149,14 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
             typedef typename util::rm_ref<SArg>::type setter_arg;
             static_assert(std::is_same<getter_result, setter_arg>::value,
                           "getter result doesn't match setter argument");
-            m_serialize = [getter] (const uniform_type_info* mt,
-                                    const void* obj,
+            m_serialize = [getter] (uniform_type_info const* mt,
+                                    void const* obj,
                                     serializer* s)
             {
-                GRes v = (*reinterpret_cast<const C*>(obj).*getter)();
+                GRes v = (*reinterpret_cast<C const*>(obj).*getter)();
                 mt->serialize(&v, s);
             };
-            m_deserialize = [setter] (const uniform_type_info* mt,
+            m_deserialize = [setter] (uniform_type_info const* mt,
                                       void* obj,
                                       deserializer* d)
             {
@@ -173,11 +177,11 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
         {
             return {
                 mtptr,
-                [] (const uniform_type_info* mt, const void* obj, serializer* s)
+                [] (uniform_type_info const* mt, void const* obj, serializer* s)
                 {
                     mt->serialize(obj, s);
                 },
-                [] (const uniform_type_info* mt, void* obj, deserializer* d)
+                [] (uniform_type_info const* mt, void* obj, deserializer* d)
                 {
                     mt->deserialize(obj, d);
                 }
@@ -195,7 +199,7 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
             return *this;
         }
 
-        inline void serialize(const void* parent, serializer* s) const
+        inline void serialize(void const* parent, serializer* s) const
         {
             m_serialize(m_meta, parent, s);
         }
@@ -225,7 +229,8 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
     // pr.first = getter / setter pair
     // pr.second = meta object to handle pr.first
     template<typename GRes, typename SRes, typename SArg, typename C, typename... Args>
-    void push_back(const std::pair<std::pair<GRes (C::*)() const, SRes (C::*)(SArg)>, util::abstract_uniform_type_info<typename util::rm_ref<GRes>::type>*>& pr,
+    void push_back(const std::pair<std::pair<GRes (C::*)() const, SRes (C::*)(SArg)>,
+                   util::abstract_uniform_type_info<typename util::rm_ref<GRes>::type>*>& pr,
                    Args&&... args)
     {
         m_members.push_back({ pr.second, pr.first.first, pr.first.second });
@@ -253,7 +258,7 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
     }
 
     template< typename R, class C,typename... Args>
-    typename util::enable_if<is_stl_compliant_list<R> >::type
+    typename util::enable_if<is_stl_compatible_list<R> >::type
     push_back(R C::*mem_ptr, Args&&... args)
     {
         m_members.push_back({ new list_member<R>(), mem_ptr });
@@ -261,7 +266,7 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
     }
 
     template<typename R, class C, typename... Args>
-    typename util::enable_if<is_stl_compliant_map<R> >::type
+    typename util::enable_if<is_stl_compatible_map<R> >::type
     push_back(R C::*mem_ptr, Args&&... args)
     {
         m_members.push_back({ new map_member<R>(), mem_ptr });
@@ -284,13 +289,13 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
     }
 
     template<typename Map>
-    void init_(typename util::enable_if<is_stl_compliant_map<Map>>::type* = 0)
+    void init_(typename util::enable_if<is_stl_compatible_map<Map>>::type* = 0)
     {
         m_members.push_back(member::fake_member(new map_member<Map>));
     }
 
     template<typename List>
-    void init_(typename util::enable_if<is_stl_compliant_list<List>>::type* = 0)
+    void init_(typename util::enable_if<is_stl_compatible_list<List>>::type* = 0)
     {
         m_members.push_back(member::fake_member(new list_member<List>));
     }
@@ -322,7 +327,7 @@ class default_uniform_type_info_impl : public util::abstract_uniform_type_info<T
         }
     }
 
-    void serialize(const void* obj, serializer* s) const
+    void serialize(void const* obj, serializer* s) const
     {
         s->begin_object(this->name());
         for (auto& m : m_members)

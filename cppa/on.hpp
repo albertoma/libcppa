@@ -33,7 +33,7 @@ class timed_invoke_rule_builder
 
  public:
 
-    constexpr timed_invoke_rule_builder(const util::duration& d) : m_timeout(d)
+    constexpr timed_invoke_rule_builder(util::duration const& d) : m_timeout(d)
     {
     }
 
@@ -67,7 +67,7 @@ class invoke_rule_builder
  public:
 
     template<typename... Args>
-    invoke_rule_builder(const Args&... args)
+    invoke_rule_builder(Args const&... args)
     {
         m_pattern.reset(new pattern_type(args...));
     }
@@ -125,7 +125,7 @@ constexpr detail::on_the_fly_invoke_rule_builder on_arg_match()
 template<typename Arg0, typename... Args>
 detail::invoke_rule_builder<typename detail::unboxed<Arg0>::type,
                             typename detail::unboxed<Args>::type...>
-on(const Arg0& arg0, const Args&... args)
+on(Arg0 const& arg0, Args const&... args)
 {
     return { arg0, args... };
 }

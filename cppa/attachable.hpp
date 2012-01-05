@@ -12,8 +12,8 @@ namespace cppa {
 class attachable
 {
 
-    attachable(const attachable&) = delete;
-    attachable& operator=(const attachable&) = delete;
+    attachable(attachable const&) = delete;
+    attachable& operator=(attachable const&) = delete;
 
  protected:
 
@@ -23,9 +23,9 @@ class attachable
 
     struct token
     {
-        const std::type_info& subtype;
-        const void* ptr;
-        inline token(const std::type_info& msubtype, const void* mptr)
+        std::type_info const& subtype;
+        void const* ptr;
+        inline token(std::type_info const& msubtype, void const* mptr)
             : subtype(msubtype), ptr(mptr)
         {
         }
@@ -41,7 +41,7 @@ class attachable
      */
     virtual void detach(std::uint32_t reason);
 
-    virtual bool matches(const token&);
+    virtual bool matches(token const&);
 
 };
 

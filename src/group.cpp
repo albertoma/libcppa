@@ -8,8 +8,8 @@
 
 namespace cppa {
 
-intrusive_ptr<group> group::get(const std::string& arg0,
-                                const std::string& arg1)
+intrusive_ptr<group> group::get(std::string const& arg0,
+                                std::string const& arg1)
 {
     return detail::singleton_manager::get_group_manager()->get(arg0, arg1);
 }
@@ -19,8 +19,8 @@ void group::add_module(group::module* ptr)
     detail::singleton_manager::get_group_manager()->add_module(ptr);
 }
 
-group::unsubscriber::unsubscriber(const channel_ptr& s,
-                                  const intrusive_ptr<group>& g)
+group::unsubscriber::unsubscriber(channel_ptr const& s,
+                                  intrusive_ptr<group> const& g)
     : m_self(s), m_group(g)
 {
 }
@@ -30,7 +30,7 @@ group::unsubscriber::~unsubscriber()
     if (m_group) m_group->unsubscribe(m_self);
 }
 
-group::module::module(const std::string& name) : m_name(name)
+group::module::module(std::string const& name) : m_name(name)
 {
 }
 
@@ -38,16 +38,16 @@ group::module::module(std::string&& name) : m_name(std::move(name))
 {
 }
 
-const std::string& group::module::name()
+std::string const& group::module::name()
 {
     return m_name;
 }
 
-bool group::unsubscriber::matches(const attachable::token& what)
+bool group::unsubscriber::matches(attachable::token const& what)
 {
     if (what.subtype == typeid(group::unsubscriber))
     {
-        return m_group == reinterpret_cast<const group*>(what.ptr);
+        return m_group == reinterpret_cast<group const*>(what.ptr);
     }
     return false;
 }
@@ -57,17 +57,17 @@ group::group(std::string&& id, std::string&& mod_name)
 {
 }
 
-group::group(const std::string& id, const std::string& mod_name)
+group::group(std::string const& id, std::string const& mod_name)
     : m_identifier(id), m_module_name(mod_name)
 {
 }
 
-const std::string& group::identifier() const
+std::string const& group::identifier() const
 {
     return m_identifier;
 }
 
-const std::string& group::module_name() const
+std::string const& group::module_name() const
 {
     return m_module_name;
 }

@@ -32,7 +32,7 @@ void converted_thread_context::enqueue(actor* sender, any_tuple&& msg)
     m_mailbox.push_back(new queue_node(sender, std::move(msg)));
 }
 
-void converted_thread_context::enqueue(actor* sender, const any_tuple& msg)
+void converted_thread_context::enqueue(actor* sender, any_tuple const& msg)
 {
     m_mailbox.push_back(new queue_node(sender, msg));
 }
@@ -69,11 +69,11 @@ void converted_thread_context::dequeue(timed_invoke_rules& rules)  /*override*/
     while (dq(node, rules, buffer) == false);
 }
 converted_thread_context::throw_on_exit_result
-converted_thread_context::throw_on_exit(const any_tuple& msg)
+converted_thread_context::throw_on_exit(any_tuple const& msg)
 {
     if (m_exit_msg_pattern(msg))
     {
-        auto reason = *reinterpret_cast<const std::uint32_t*>(msg.at(2));
+        auto reason = *reinterpret_cast<std::uint32_t const*>(msg.at(2));
         if (reason != exit_reason::normal)
         {
             // throws

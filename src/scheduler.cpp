@@ -72,9 +72,9 @@ void scheduler_helper::time_emitter(scheduler_helper::ptr_type m_self)
     // message handling rules
     auto rules =
     (
-        on<util::duration,actor_ptr,anything>() >> [&](const util::duration& d,
-                                                       const actor_ptr&)
-//        on<util::duration,anything>() >> [&](const util::duration& d)
+        on<util::duration,actor_ptr,anything>() >> [&](util::duration const& d,
+                                                       actor_ptr const&)
+//        on<util::duration,anything>() >> [&](util::duration const& d)
         {
             //any_tuple msg = msg_ptr->msg.tail();
             // calculate timeout
@@ -106,7 +106,7 @@ void scheduler_helper::time_emitter(scheduler_helper::ptr_type m_self)
                 while (it != messages.end() && (it->first) <= now)
                 {
                     auto ptr = it->second;
-                    auto whom = const_cast<actor_ptr*>(reinterpret_cast<const actor_ptr*>(ptr->msg.at(1)));
+                    auto whom = const_cast<actor_ptr*>(reinterpret_cast<actor_ptr const*>(ptr->msg.at(1)));
                     if (*whom)
                     {
                         auto msg = ptr->msg.tail(2);

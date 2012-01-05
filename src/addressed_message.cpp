@@ -3,21 +3,21 @@
 
 namespace cppa { namespace detail {
 
-addressed_message::addressed_message(const actor_ptr& from,
-                 const channel_ptr& to,
-                 const any_tuple& ut)
+addressed_message::addressed_message(actor_ptr const& from,
+                 channel_ptr const& to,
+                 any_tuple const& ut)
     : m_sender(from), m_receiver(to), m_content(ut)
 {
 }
 
-addressed_message::addressed_message(const actor_ptr& from,
-                 const channel_ptr& to,
+addressed_message::addressed_message(actor_ptr const& from,
+                 channel_ptr const& to,
                  any_tuple&& ut)
     : m_sender(from), m_receiver(to), m_content(std::move(ut))
 {
 }
 
-bool operator==(const addressed_message& lhs, const addressed_message& rhs)
+bool operator==(addressed_message const& lhs, addressed_message const& rhs)
 {
     return    lhs.sender() == rhs.sender()
            && lhs.receiver() == rhs.receiver()

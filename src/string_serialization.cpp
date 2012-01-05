@@ -28,12 +28,12 @@ class string_serializer : public serializer
         pt_writer(std::ostream& mout) : out(mout) { }
 
         template<typename T>
-        void operator()(const T& value)
+        void operator()(T const& value)
         {
             out << value;
         }
 
-        void operator()(const std::string& str)
+        void operator()(std::string const& str)
         {
             out << "\"";// << str << "\"";
             for (char c : str)
@@ -44,9 +44,9 @@ class string_serializer : public serializer
             out << '"';
         }
 
-        void operator()(const std::u16string&) { }
+        void operator()(std::u16string const&) { }
 
-        void operator()(const std::u32string&) { }
+        void operator()(std::u32string const&) { }
 
     };
 
@@ -75,7 +75,7 @@ class string_serializer : public serializer
     {
     }
 
-    void begin_object(const std::string& type_name)
+    void begin_object(std::string const& type_name)
     {
         clear();
         m_open_objects.push(type_name);
@@ -112,7 +112,7 @@ class string_serializer : public serializer
         m_after_value = true;
     }
 
-    void write_value(const primitive_variant& value)
+    void write_value(primitive_variant const& value)
     {
         clear();
         if (m_open_objects.empty())
@@ -136,11 +136,11 @@ class string_serializer : public serializer
         m_after_value = true;
     }
 
-    void write_tuple(size_t size, const primitive_variant* values)
+    void write_tuple(size_t size, primitive_variant const* values)
     {
         clear();
         out << "{";
-        const primitive_variant* end = values + size;
+        primitive_variant const* end = values + size;
         for ( ; values != end; ++values)
         {
             write_value(*values);
@@ -164,7 +164,7 @@ class string_deserializer : public deserializer
         while (*m_pos == ' ' || *m_pos == ',') ++m_pos;
     }
 
-    void throw_malformed(const std::string& error_msg)
+    void throw_malformed(std::string const& error_msg)
     {
         throw std::logic_error("malformed string: " + error_msg);
     }
@@ -232,7 +232,7 @@ class string_deserializer : public deserializer
 
  public:
 
-    string_deserializer(const std::string& str) : m_str(str)
+    string_deserializer(std::string const& str) : m_str(str)
     {
         m_pos = m_str.begin();
     }
@@ -263,7 +263,7 @@ class string_deserializer : public deserializer
         return result;
     }
 
-    void begin_object(const std::string& type_name)
+    void begin_object(std::string const& type_name)
     {
         m_open_objects.push(type_name);
         //++m_obj_count;
@@ -317,8 +317,8 @@ class string_deserializer : public deserializer
 
     struct from_string
     {
-        const std::string& str;
-        from_string(const std::string& s) : str(s) { }
+        std::string const& str;
+        from_string(std::string const& s) : str(s) { }
         template<typename T>
         void operator()(T& what)
         {
@@ -446,12 +446,12 @@ class string_deserializer : public deserializer
     }
 
     void read_tuple(size_t size,
-                    const primitive_type* begin,
+                    primitive_type const* begin,
                     primitive_variant* storage)
     {
         integrity_check();
         consume('{');
-        const primitive_type* end = begin + size;
+        primitive_type const* end = begin + size;
         for ( ; begin != end; ++begin)
         {
             *storage = std::move(read_value(*begin));
@@ -464,7 +464,7 @@ class string_deserializer : public deserializer
 
 } // namespace <anonymous>
 
-object from_string(const std::string& what)
+object from_string(std::string const& what)
 {
     string_deserializer strd(what);
     std::string uname = strd.peek_object();

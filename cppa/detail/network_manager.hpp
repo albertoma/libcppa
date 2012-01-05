@@ -1,6 +1,7 @@
 #ifndef NETWORK_MANAGER_HPP
 #define NETWORK_MANAGER_HPP
 
+#include "cppa/actor.hpp"
 #include "cppa/detail/mailman.hpp"
 #include "cppa/detail/post_office_msg.hpp"
 

@@ -16,15 +16,15 @@ inline constexpr std::uint64_t to_int(cppa::atom_value value)
 
 namespace cppa {
 
-actor_proxy::actor_proxy(std::uint32_t mid, const process_information_ptr& pptr)
+actor_proxy::actor_proxy(std::uint32_t mid, process_information_ptr const& pptr)
     : super(mid, pptr)
 {
     attach(get_scheduler()->register_hidden_context());
 }
 
-void actor_proxy::forward_message(const process_information_ptr& piptr,
+void actor_proxy::forward_message(process_information_ptr const& piptr,
                                   actor* sender,
-                                  const any_tuple& msg)
+                                  any_tuple const& msg)
 {
     auto mailman_msg = new detail::mailman_job(piptr, sender, this, msg);
     detail::mailman_queue().push_back(mailman_msg);
@@ -36,7 +36,7 @@ void actor_proxy::enqueue(actor* sender, any_tuple&& msg)
     enqueue(sender, tmp);
 }
 
-void actor_proxy::enqueue(actor* sender, const any_tuple& msg)
+void actor_proxy::enqueue(actor* sender, any_tuple const& msg)
 {
     /*
     if (msg.size() > 0 && msg.utype_info_at(0) == typeid(atom_value))

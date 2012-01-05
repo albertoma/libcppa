@@ -30,13 +30,13 @@ class local_group : public group
     {
     }
 
-    local_group(const std::string& gname) : group(gname, "local")
+    local_group(std::string const& gname) : group(gname, "local")
     {
     }
 
  public:
 
-    void enqueue(actor* sender, const any_tuple& msg) /*override*/
+    void enqueue(actor* sender, any_tuple const& msg) /*override*/
     {
         shared_guard guard(m_shared_mtx);
         for (auto i = m_subscribers.begin(); i != m_subscribers.end(); ++i)
@@ -51,7 +51,7 @@ class local_group : public group
         enqueue(sender, tmp);
     }
 
-    virtual group::subscription subscribe(const channel_ptr& who)
+    virtual group::subscription subscribe(channel_ptr const& who)
     {
         group::subscription result;
         exclusive_guard guard(m_shared_mtx);
@@ -62,7 +62,7 @@ class local_group : public group
         return result;
     }
 
-    virtual void unsubscribe(const channel_ptr& who)
+    virtual void unsubscribe(channel_ptr const& who)
     {
         exclusive_guard guard(m_shared_mtx);
         m_subscribers.erase(who);
@@ -84,7 +84,7 @@ class local_group_module : public group::module
     {
     }
 
-    group_ptr get(const std::string& group_name)
+    group_ptr get(std::string const& group_name)
     {
         shared_guard guard(m_mtx);
         auto i = m_instances.find(group_name);
@@ -117,8 +117,8 @@ group_manager::group_manager()
     m_mmap.insert(std::make_pair(std::string("local"), std::move(ptr)));
 }
 
-intrusive_ptr<group> group_manager::get(const std::string& module_name,
-                                        const std::string& group_identifier)
+intrusive_ptr<group> group_manager::get(std::string const& module_name,
+                                        std::string const& group_identifier)
 {
     // lifetime scope of guard
     {
@@ -137,7 +137,7 @@ intrusive_ptr<group> group_manager::get(const std::string& module_name,
 
 void group_manager::add_module(group::module* mod)
 {
-    const std::string& mname = mod->name();
+    std::string const& mname = mod->name();
     std::unique_ptr<group::module> mptr(mod);
     // lifetime scope of guard
     {

@@ -13,15 +13,16 @@
 namespace cppa { namespace detail {
 
 mailman_job::mailman_job(process_information_ptr piptr,
-                         const actor_ptr& from,
-                         const channel_ptr& to,
-                         const any_tuple& content)
+                         actor_ptr const& from,
+                         channel_ptr const& to,
+                         any_tuple const& content)
     : next(nullptr), m_type(send_job_type)
 {
     new (&m_send_job) mailman_send_job (piptr, from, to, content);
 }
 
-mailman_job::mailman_job(native_socket_t sockfd, const process_information_ptr& pinfo)
+mailman_job::mailman_job(native_socket_t sockfd,
+                         process_information_ptr const& pinfo)
     : next(0), m_type(add_peer_type)
 {
     new (&m_add_socket) mailman_add_peer (sockfd, pinfo);

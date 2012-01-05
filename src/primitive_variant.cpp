@@ -32,10 +32,10 @@ struct destroyer
 
 struct type_reader
 {
-    const std::type_info* tinfo;
+    std::type_info const* tinfo;
     type_reader() : tinfo(nullptr) { }
     template<typename T>
-    void operator()(const T&)
+    void operator()(T const&)
     {
         tinfo = &typeid(T);
     }
@@ -44,10 +44,10 @@ struct type_reader
 struct comparator
 {
     bool result;
-    const primitive_variant& lhs;
-    const primitive_variant& rhs;
+    primitive_variant const& lhs;
+    primitive_variant const& rhs;
 
-    comparator(const primitive_variant& pv1, const primitive_variant& pv2)
+    comparator(primitive_variant const& pv1, primitive_variant const& pv2)
         : result(false), lhs(pv1), rhs(pv2)
     {
     }
@@ -83,7 +83,7 @@ struct setter
     setter(primitive_variant& pv) : lhs(pv) { }
 
     template<typename T>
-    inline void operator()(const T& rhs)
+    inline void operator()(T const& rhs)
     {
         lhs = rhs;
     }
@@ -111,7 +111,7 @@ primitive_variant::primitive_variant(primitive_type ptype) : m_ptype(pt_null)
     util::pt_dispatch(ptype, initializer(*this));
 }
 
-primitive_variant::primitive_variant(const primitive_variant& other)
+primitive_variant::primitive_variant(primitive_variant const& other)
     : m_ptype(pt_null)
 {
     other.apply(setter(*this));
@@ -123,7 +123,7 @@ primitive_variant::primitive_variant(primitive_variant&& other)
     other.apply(mover(*this));
 }
 
-primitive_variant& primitive_variant::operator=(const primitive_variant& other)
+primitive_variant& primitive_variant::operator=(primitive_variant const& other)
 {
     other.apply(setter(*this));
     return *this;
@@ -135,14 +135,14 @@ primitive_variant& primitive_variant::operator=(primitive_variant&& other)
     return *this;
 }
 
-bool operator==(const primitive_variant& lhs, const primitive_variant& rhs)
+bool operator==(primitive_variant const& lhs, primitive_variant const& rhs)
 {
     comparator cmp(lhs, rhs);
     util::pt_dispatch(lhs.m_ptype, cmp);
     return cmp.result;
 }
 
-const std::type_info& primitive_variant::type() const
+std::type_info const& primitive_variant::type() const
 {
     type_reader tr;
     apply(tr);

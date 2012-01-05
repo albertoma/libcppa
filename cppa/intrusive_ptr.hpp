@@ -15,7 +15,7 @@ namespace cppa {
  * @relates ref_counted
  */
 template<typename T>
-class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
+class intrusive_ptr : util::comparable<intrusive_ptr<T>, T const*>,
                       util::comparable<intrusive_ptr<T>>
 {
 
@@ -33,7 +33,7 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
 
     intrusive_ptr(T* raw_ptr) { set_ptr(raw_ptr); }
 
-    intrusive_ptr(const intrusive_ptr& other)
+    intrusive_ptr(intrusive_ptr const& other)
     {
         set_ptr(other.m_ptr);
     }
@@ -43,7 +43,7 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
     }
 
     template<typename Y>
-    intrusive_ptr(const intrusive_ptr<Y>& other)
+    intrusive_ptr(intrusive_ptr<Y> const& other)
     {
         static_assert(std::is_convertible<Y*, T*>::value,
                       "Y* is not assignable to T*");
@@ -67,7 +67,7 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
 
     inline T* get() { return m_ptr; }
 
-    inline const T* get() const { return m_ptr; }
+    inline T const* get() const { return m_ptr; }
 
     T* take()
     {
@@ -95,7 +95,7 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
         reset(static_cast<T*>(new_value));
     }
 
-    intrusive_ptr& operator=(const intrusive_ptr& other)
+    intrusive_ptr& operator=(intrusive_ptr const& other)
     {
         intrusive_ptr tmp(other);
         swap(tmp);
@@ -110,7 +110,7 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
     }
 
     template<typename Y>
-    intrusive_ptr& operator=(const intrusive_ptr<Y>& other)
+    intrusive_ptr& operator=(intrusive_ptr<Y> const& other)
     {
         intrusive_ptr tmp(other);
         swap(tmp);
@@ -131,18 +131,18 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
 
     inline T& operator*() { return *m_ptr; }
 
-    inline const T* operator->() const { return m_ptr; }
+    inline T const* operator->() const { return m_ptr; }
 
-    inline const T& operator*() const { return *m_ptr; }
+    inline T const& operator*() const { return *m_ptr; }
 
     inline explicit operator bool() const { return m_ptr != nullptr; }
 
-    inline ptrdiff_t compare(const T* ptr) const
+    inline ptrdiff_t compare(T const* ptr) const
     {
         return static_cast<ptrdiff_t>(get() - ptr);
     }
 
-    inline ptrdiff_t compare(const intrusive_ptr& other) const
+    inline ptrdiff_t compare(intrusive_ptr const& other) const
     {
         return compare(other.get());
     }
@@ -164,13 +164,13 @@ class intrusive_ptr : util::comparable<intrusive_ptr<T>, const T*>,
 };
 
 template<typename X, typename Y>
-bool operator==(const intrusive_ptr<X>& lhs, const intrusive_ptr<Y>& rhs)
+bool operator==(intrusive_ptr<X> const& lhs, intrusive_ptr<Y> const& rhs)
 {
     return lhs.get() == rhs.get();
 }
 
 template<typename X, typename Y>
-inline bool operator!=(const intrusive_ptr<X>& lhs, const intrusive_ptr<Y>& rhs)
+inline bool operator!=(intrusive_ptr<X> const& lhs, intrusive_ptr<Y> const& rhs)
 {
     return !(lhs == rhs);
 }

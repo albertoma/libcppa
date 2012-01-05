@@ -10,7 +10,7 @@ void attachable::detach(std::uint32_t)
 {
 }
 
-bool attachable::matches(const attachable::token&)
+bool attachable::matches(attachable::token const&)
 {
     return false;
 }
